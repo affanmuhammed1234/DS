@@ -1,106 +1,125 @@
-#include<stdio.h>
-#include<stdlib.h>
-
-struct Node {
+#include <stdio.h>
+#include <stdlib.h>
+typedef struct Node {
     int data;
     struct Node* left;
     struct Node* right;
-};
-struct Node* createNode(int value) {
-    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
-    newNode->data = value;
+} Node;
+Node* createNode(int data) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    if (!newNode) {
+        printf("Memory error\n");
+        return NULL;
+    }
+    newNode->data = data;
     newNode->left = newNode->right = NULL;
     return newNode;
 }
-struct Node* insert(struct Node* root, int value) {
+Node* insert(Node* root, int data) {
     if (root == NULL) {
-        return createNode(value);
+        return createNode(data);
     }
-    if (value < root->data)
-        root->left = insert(root->left, value);
-    else if (value > root->data)
-        root->right = insert(root->right, value);
+    if (data < root->data) {
+        root->left = insert(root->left, data);
+    } else if (data > root->data) {
+        root->right = insert(root->right, data);
+    }
     return root;
 }
+Node* search(Node* root, int data) {
+    if (root == NULL || root->data == data)
+        return root;
 
+    if (data < root->data)
+        return search(root->left, data);
+    else
+        return search(root->right, data);
+}
+Node* findMin(Node* root) {
+    while (root && root->left != NULL)
+        root = root->left;
+    return root;
+}
+Node* deleteNode(Node* root, int data) {
+    if (root == NULL)
+        return root;
 
-void inorder(struct Node* root) {
+    if (data < root->data)
+        root->left = deleteNode(root->left, data);
+    else if (data > root->data)
+        root->right = deleteNode(root->right, data);
+    else {
+        if (root->left == NULL) {
+            Node* temp = root->right;
+            free(root);
+            return temp;
+        } else if (root->right == NULL) {
+            Node* temp = root->left;
+            free(root);
+            return temp;
+        }
+        Node* temp = findMin(root->right);
+        root->data = temp->data;
+        root->right = deleteNode(root->right, temp->data);
+    }
+    return root;
+}
+void inorder(Node* root) {
     if (root != NULL) {
         inorder(root->left);
         printf("%d ", root->data);
         inorder(root->right);
     }
 }
-
-void preorder(struct Node* root) {
-    if (root != NULL) {
-        printf("%d ", root->data);
-        preorder(root->left);
-        preorder(root->right);
-    }
-}
-
-void postorder(struct Node* root) {
-    if (root != NULL) {
-        postorder(root->left);
-        postorder(root->right);
-        printf("%d ", root->data);
-    }
-}
-
 int main() {
-    struct Node* root = NULL;
-    int choice, value,n;
-       printf("Enter Total number of value to insert: ");
-         scanf("%d", &n);
-         for(int i=1;i<=n;i++)
-         {
-         printf("Value %i:" , i);
-         scanf("%d",& value);
-          root = insert(root, value);
+    Node* root = NULL;
+    int choice, val;
+    Node* found;
+
+    while (1) {
+        printf("\n1. Insert\n2. Search\n3. Delete\n4. Inorder traversal\n5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter value to insert: ");
+                scanf("%d", &val);
+                root = insert(root, val);
+                printf("%d inserted.\n", val);
+                break;
+
+            case 2:
+                printf("Enter value to search: ");
+                scanf("%d", &val);
+                found = search(root, val);
+                if (found)
+                    printf("%d found in the tree.\n", val);
+                else
+                    printf("%d not found in the tree.\n", val);
+                break;
+
+            case 3:
+                printf("Enter value to delete: ");
+                scanf("%d", &val);
+                root = deleteNode(root, val);
+                printf("%d deleted (if it existed).\n", val);
+                break;
+
+            case 4:
+                printf("Inorder traversal: ");
+                inorder(root);
+                printf("\n");
+                break;
+
+            case 5:
+                printf("Exiting...\n");
+                exit(0);
+
+            default:
+                printf("Invalid choice.\n");
         }
-    
-  printf("\nInorder Traversal: ");
-  inorder(root);
- printf("\n");
-             
-        
-printf("Preorder Traversal: ");
-preorder(root);
-printf("\n");
-            
- printf("Postorder Traversal: ");
- postorder(root);
- printf("\n");
-            
- 
+    }
+
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
